@@ -14,7 +14,7 @@ class nih_dataset_classification(Sequence):
         print(self.df.head())
         print(self.df.columns)
         self.data_files = self.df[['Image Index', 'Finding Labels']]
-        self.files = glob.glob('*.png', "**", recursive=True, root_dir=dir)
+        self.files = glob.glob(dir + '/**/*.png', "**", recursive=True, )
         print(len(self.files))
     def __len__(self,):
         pass

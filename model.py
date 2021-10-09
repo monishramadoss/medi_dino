@@ -79,6 +79,8 @@ class VIT(Model):
             embedd = block(embedd)
         return embedd
 
+#https://keras.io/api/callbacks/base_callback/
+
 class DINOLossScheduler(K.callbacks.Callback):
     def __init__(self, loss_obj, nepochs, teacher_temp, warmup_teacher_temp, warmup_teacher_temp_epochs):
         self.teacher_temp_schedule = np.concatenate([

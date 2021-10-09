@@ -13,7 +13,7 @@ class nih_dataset_classification(Sequence):
         self.df = pd.read_csv(join(dir, 'Data_Entry_2017.csv'))
         print(self.df.head())
         print(self.df.columns)
-        self.data_files = self.df['Image_Index', 'Finding_Labels']
+        self.data_files = self.df['Image Index', 'Finding Labels']
         self.files = glob.glob('*.png', "**", recursive=True, root_dir=dir)
         print(len(self.files))
     def __len__(self,):

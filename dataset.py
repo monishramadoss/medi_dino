@@ -11,6 +11,7 @@ join = os.path.join
 class nih_dataset_classification(Sequence):
     def __init__(self, dir='~/data/nih'):
         self.df = pd.read_csv(join(dir, 'Data_Entry_2017.csv'))
+        print(self.df.head())
         self.data_files = self.df['Image Index', 'Finding Labels']
         self.files = glob.glob('*.png', "**", recursive=True, root_dir=dir)
         print(len(self.files))

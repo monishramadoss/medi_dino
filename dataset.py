@@ -19,3 +19,6 @@ class nih_dataset_classification(Sequence):
 
     def __getitem__(self, idx):
         pass
+
+if __name__ == "__main__":
+    dataset = nih_dataset_classification()

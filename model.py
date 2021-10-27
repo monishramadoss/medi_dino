@@ -94,9 +94,6 @@ class DINOLossScheduler(K.callbacks.Callback):
         tf.keras.backend.set_value(self.loss.teacher_temp, self.teacher_temp_schedule[epoch])
 
 
-
-
-
 class DINOLoss(losses.Loss):
     def __init__(self, nepochs, student_temp, teacher_temp, warmup_teacher_temp_epochs, warmup_teacher_temp, center_momentum, ncrops, out_dims):
         self.center_momentum = center_momentum
@@ -129,4 +126,7 @@ class DINOLoss(losses.Loss):
 
 
 class DINO(Model):
-    
+    def __init__(self):
+        self.student_model = VIT()
+        self.teacher_model = VIT()
+        

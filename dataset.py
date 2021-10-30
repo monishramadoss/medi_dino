@@ -3,12 +3,23 @@ import glob
 import math
 import tensorflow as tf
 import tensorflow.keras as K
+from tensorflow.keras import layers
 from tensorflow.keras.utils import Sequence
+from tensorflow.keras.layers.experimental import preprocessing
 import pandas as pd
 from skimage.io import imread
 import numpy as np
 
 join = os.path.join
+
+resize = lambda size : preprocessing.Resizing(size, size)
+
+global_augmentation = K.Sequential([
+    preprocessing.RandomFlip("vertical"),
+    preprocessing.RandomZoom(0.9, 0.9)
+]) 
+
+
 
 def label_split(label, label_dict={}):
     one_hot = [0 for _ in range(len(label_dict))]
@@ -53,26 +64,36 @@ class nih_dataset(Sequence):
         for file_path in glob.iglob(join(dir, "**/*.png"), recursive=True):
             if file_path.lower().endswith(".png"):
                 self.files[os.path.basename(file_path)] = file_path
-                
+        self.localizaiton_model = None
+        
     def __len__(self,):
         return math.ceil(len(self.image_names)  / self.batch_size)
-
+    
+    def get_logits_size(self):
+        return len(self.label_dict)
+    
     def __getitem__(self, idx):
         image_name = self.image_names[idx]
         image_name = image_name.strip()
         image = imread(self.files[image_name])
         label = []
         if len(image.shape) != 2:
-            print(image_name)
+            image = np.add(image, axis=-1) / image.shape[-1]
+            
         im_frame = self.data_files.loc[self.data_files['Image Index'] == image_name]
         if not self.bounding_box:
             label_str = im_frame['Finding Labels'].to_list()
             label = label_split(label_str[0], self.label_dict)
             
         images = np.array(image)
+        images = np.expand_dims(images, (0, -1))
         labels = np.array(label)
+        images = tf.convert_to_tensor(images)
+        labels = tf.convert_to_tensor(labels)
         return images, labels
 
+    
 if __name__ == "__main__":
     dataset = nih_dataset()
-    print(dataset[0][0].shape)
+    print(dataset.get_logits_size())
+    

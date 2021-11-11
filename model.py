@@ -40,8 +40,7 @@ class PatchExtract(layers.Layer):
         )
         patch_dim = patches.shape[-1]
         patch_num = patches.shape[1]
-        print(patches.shape)
-        _shape = tf.convert_to_tensor([-1, patch_num ** 2, 1024],)
+        _shape = tf.convert_to_tensor([-1, patch_num ** 2, patches.shape[-1]],)
         return tf.reshape(patches, shape=_shape)
 
 
@@ -79,11 +78,13 @@ class EncoderBlock(layers.Layer):
 class VIT(Model):
     def __init__(self, image_size, patch_size, projection_dim=64, num_heads=4, transformer_layers=8, atten_dropout=0.1, mlp_dropout=0.1):
         super(VIT, self).__init__()
-        self.patches = PatchExtract(patch_size)
+        self.patches = PatchExtract(patch_size, )
         num_patches = (image_size // patch_size) ** 2
+        print("num_patches: ", num_patches)
         self.patch_encoder = PatchEmbedding(num_patches, projection_dim)
         self.transformer_blocks = [EncoderBlock(num_heads, projection_dim, atten_dropout, mlp_dropout) for _ in range(transformer_layers)]
         self.l1 = layers.LayerNormalization(epsilon=1e-6)
+    
     def call(self, x):
         patches = self.patches(x)
         embedd = self.patch_encoder(patches)

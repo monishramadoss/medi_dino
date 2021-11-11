@@ -33,6 +33,7 @@ class DINOLoss(losses.Loss):
         total_loss /= n_loss_terms
         self.update_center(teacher_out)
         self.epoch += 1
+        
     def update_center(self, teacher_logit):
         batch_center = tf.math.reduce_sum(teacher_logit, axis=0, keepdim=True)
         batch_center = batch_center / (len(teacher_logit))

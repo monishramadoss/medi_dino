@@ -92,64 +92,18 @@ class VIT(Model):
         return embedd
 
 class VIT_Class(Model):
-    def __init__(self, image_size, patch_size, logits_size, transform=None):
+    def __init__(self, image_size, patch_size, logits_size):
         super(VIT_Class, self).__init__()
         self.vit = VIT(image_size, patch_size)
-        self.dense_0 = layers.Dense(64)
+        self.dense_0 = layers.Dense(logits_size ** 2)
         self.dense_1 = layers.Dense(logits_size)
-        self.transform = transform
         
     def call(self, x):
-        if self.transform:
-            x = self.transform(x)        
         y = self.vit(x)
         y = self.dense_0(y)
         return self.dense_1(y)
     
-#https://keras.io/api/callbacks/base_callback/
 
-class DINOLossScheduler(K.callbacks.Callback):
-    def __init__(self, loss_obj, nepochs, teacher_temp, warmup_teacher_temp, warmup_teacher_temp_epochs):
-        self.teacher_temp_schedule = np.concatenate([
-            np.linspace(warmup_teacher_temp, teacher_temp, warmup_teacher_temp_epochs),
-            np.ones(nepochs - warmup_teacher_temp_epochs) * teacher_temp
-        ])
-        self.loss = self.loss_obj
-
-    def on_epoch_begin(self, epoch, logs=None):
-        self.epoch_count = epoch
-        tf.keras.backend.set_value(self.loss.teacher_temp, self.teacher_temp_schedule[epoch])
-
-
-class DINOLoss(losses.Loss):
-    def __init__(self, nepochs, student_temp, teacher_temp, warmup_teacher_temp_epochs, warmup_teacher_temp, center_momentum, ncrops, out_dims):
-        self.center_momentum = center_momentum
-        self.ncrops = ncrops
-        self.center =  tf.zeros([1, out_dims])
-        self.teacher_temp = teacher_temp
-        self.student_temp = student_temp
-        
-
-    def call(self, student_logit, teacher_logit, sample_weight=None):
-        student_out = student_logit / self.student_temp
-        teacher_out = tf.nn.softmax((teacher_output - self.center) / self.teacher_temp, axis=-1)
-        total_loss = 0.0
-        n_loss_terms = 0
-        for iq, q in enumerate(teacher_out):
-            for v in range(student_out.shape[0]):
-                if v == q:
-                    continue
-                loss = tf.math.reduce_sum(-q * tf.nn.log_softmax(student_out[v], axis=-1), axis=-1)
-                n_loss_terms += 1
-                total_loss += loss.mean()
-
-        total_loss /= n_loss_terms
-        self.update_center(teacher_out)
-
-    def update_center(self, teacher_logit):
-        batch_center = tf.math.reduce_sum(teacher_logit, axis=0, keepdim=True)
-        batch_center = batch_center / (len(teacher_logit))
-        self.center = self.center * self.center_momentum + batch_center * (1 - self.center_momentum)
 
 
     

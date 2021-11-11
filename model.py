@@ -25,22 +25,20 @@ def mlp( hidden_units, dropout_rate):
     return Sequential(mlp_lst)
 
 class PatchExtract(layers.Layer):
-    def __init__(self, patch_size, **kwargs):
+    def __init__(self, patch_size, patch_num, **kwargs):
         super(PatchExtract, self).__init__(**kwargs)
         self.patch_size = patch_size
-
+        self.patch_num = patch_num
     def call(self, images):
-        batch_size = tf.shape(images)[0]
         patches = tf.image.extract_patches(
             images=images,
             sizes=(1, self.patch_size, self.patch_size, 1),
             strides=(1, self.patch_size, self.patch_size, 1),
             rates=(1, 1, 1, 1),
             padding="VALID",
-        )
-        patch_dim = patches.shape[-1]
-        patch_num = patches.shape[1]
-        _shape = tf.convert_to_tensor([-1, patch_num ** 2, patches.shape[-1]],)
+        )       
+
+        _shape = tf.convert_to_tensor([-1, self.patch_num, self.patch_size ** 2],)
         return tf.reshape(patches, shape=_shape)
 
 
@@ -78,8 +76,8 @@ class EncoderBlock(layers.Layer):
 class VIT(Model):
     def __init__(self, image_size, patch_size, projection_dim=64, num_heads=4, transformer_layers=8, atten_dropout=0.1, mlp_dropout=0.1):
         super(VIT, self).__init__()
-        self.patches = PatchExtract(patch_size, )
         num_patches = (image_size // patch_size) ** 2
+        self.patches = PatchExtract(patch_size, num_patches)
         print("num_patches: ", num_patches)
         self.patch_encoder = PatchEmbedding(num_patches, projection_dim)
         self.transformer_blocks = [EncoderBlock(num_heads, projection_dim, atten_dropout, mlp_dropout) for _ in range(transformer_layers)]

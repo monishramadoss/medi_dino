@@ -14,10 +14,10 @@ class DINOLoss(losses.Loss):
             np.ones(nepochs - warmup_teacher_temp_epochs) * teacher_temp
         ])
         self.loss = self.loss_obj
-
+        self.epoch = 0
 
     def call(self, student_logit, teacher_logit, sample_weight=None):
-        self.teacher_temp = self.teacher_temp_schedule[self.]
+        self.teacher_temp = self.teacher_temp_schedule[self.epoch]
         student_out = student_logit / self.student_temp
         teacher_out = tf.nn.softmax((teacher_logit - self.center) / self.teacher_temp, axis=-1)
         total_loss = 0.0
@@ -32,7 +32,7 @@ class DINOLoss(losses.Loss):
 
         total_loss /= n_loss_terms
         self.update_center(teacher_out)
-
+        self.epoch += 1
     def update_center(self, teacher_logit):
         batch_center = tf.math.reduce_sum(teacher_logit, axis=0, keepdim=True)
         batch_center = batch_center / (len(teacher_logit))

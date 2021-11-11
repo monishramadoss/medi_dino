@@ -21,8 +21,7 @@ def mlp( hidden_units, dropout_rate):
         mlp_lst += [
             layers.Dense(units, activation=tf.nn.gelu),
             layers.Dropout(dropout_rate)
-        ]
-    
+        ]    
     return Sequential(mlp_lst)
 
 class PatchExtract(layers.Layer):
@@ -41,6 +40,7 @@ class PatchExtract(layers.Layer):
         )
         patch_dim = patches.shape[-1]
         patch_num = patches.shape[1]
+        print(patches.shape)
         _shape = tf.convert_to_tensor([-1, patch_num ** 2, 1024],)
         return tf.reshape(patches, shape=_shape)
 

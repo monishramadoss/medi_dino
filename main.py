@@ -1,6 +1,6 @@
 import tensorflow as tf
 from train import DINO
-from model import VIT_Class()
+from model import VIT_Class
 from dataset import nih_dataset
 
 
